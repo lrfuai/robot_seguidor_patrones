@@ -1,0 +1,251 @@
+program MyRobotSeguidorPatrones
+
+' * Project name:
+'     Plantilla de proyectos - Proyecto Primario Licence Creative Common
+' * Copyright:
+'     (c) NeoRobotic, 2008
+' * Description:
+'     Manejo de puerto serie, envia y mueve servomotor
+' * Test configuration:
+'     MCU:             PIC18F874A
+'     Dev.Board:       GTP Lite
+'     Oscillator:      HS, 20.000 MHz
+'     Ext. Modules:    None
+'     SW:              mikroBasic v6
+' * NOTES:
+'     None
+' *)
+'program RS232_002
+
+' MIS SYMBOLOS ----------------------
+symbol MotorCamara = PORTA,0
+symbol MotorRuedaDerecha = PORTB,0
+symbol MotorRuedaIzquierda = PORTB,1
+'------------------------------------
+
+symbol Led = PORTA,4
+symbol Bateria = PORTA,3
+symbol Buzzer = PORTA,5
+
+symbol IR1_IN = PORTB,4
+symbol IR1_OUT = PORTB,5
+symbol IR2_IN = PORTB,2
+symbol IR2_OUT = PORTB,3
+
+symbol RS232_TX = PORTC,6
+symbol RS232_RX = PORTC,7
+symbol Motor1 = PORTA,0
+symbol Motor2 = PORTB,0
+symbol Motor3 = PORTB,1
+
+symbol D0_AN1 = PORTA,1
+symbol D1_AN2 = PORTA,2
+symbol D2 = PORTC,0
+symbol D3 = PORTC,1
+symbol D4 = PORTC,2
+symbol D5 = PORTC,3
+symbol D6 = PORTC,4
+symbol D7 = PORTC,5
+
+Dim RX_Dato , er as byte ' para recibir un dato
+
+sub procedure Init_Port
+   TRISA =0' %00100000
+   TRISB =0' %00000000' configura todo como entradas
+   TRISC =10000000'
+
+
+    Soft_Uart_Init(PORTC,  7, 6, 2400, 0)
+end sub
+
+sub procedure Read_RX
+     setbit (Led)
+     er = 1
+     RX_Dato = 0
+     do
+       RX_Dato = Soft_Uart_Read(er)
+     loop until (er = 0)
+     clearbit (Led)
+end sub
+
+sub procedure A_Dormir ()
+   setbit (Led)
+   clearbit (Buzzer)
+   delay_ms(100)
+   setbit (Buzzer)
+   delay_ms(80)
+   clearbit (Buzzer)
+   delay_ms(60)
+   setbit (Buzzer)
+   delay_ms(50)
+   clearbit (Buzzer)
+   delay_ms(30)
+   setbit (Buzzer)
+   delay_ms(20)
+   clearbit(Buzzer)
+   delay_ms(20)
+   setbit(Buzzer)
+   clearbit (Led)
+end sub
+
+sub procedure Estoy_Vivo ()
+   setbit (Led)
+   clearbit (Buzzer)
+   delay_ms(10)
+   setbit (Buzzer)
+   delay_ms(10)
+   clearbit (Buzzer)
+   delay_ms(20)
+   setbit (Buzzer)
+   delay_ms(20)
+   clearbit (Buzzer)
+   delay_ms(30)
+   setbit (Buzzer)
+   delay_ms(30)
+   clearbit (Buzzer)
+   delay_ms(40)
+   setbit (Buzzer)
+   delay_ms(40)
+   clearbit (Buzzer)
+   delay_ms(50)
+   setbit (Buzzer)
+   delay_ms(50)
+   clearbit (Led)
+
+end sub
+
+sub procedure RS232_Send_EstoyVivo()
+         Soft_Uart_write("L")
+         Soft_Uart_write("I")
+         Soft_Uart_write("S")
+         Soft_Uart_write("T")
+         Soft_Uart_write("O")
+         Soft_Uart_write(10)
+         Soft_Uart_write(13)
+end sub
+
+sub procedure CamaraArriba()
+    setbit(MotorCamara)
+    Delay_us(600)
+    Delay_ms(2)
+    clearbit(MotorCamara)
+    Delay_ms(17)
+    Delay_us(400)
+end sub
+
+sub procedure CamaraAbajo()
+    setbit(MotorCamara)
+    Delay_us(520)
+    Delay_ms(0)
+    clearbit(MotorCamara)
+    Delay_ms(19)
+    Delay_us(480)
+end sub
+
+sub procedure RuedasEnEjeIzquierda()
+    setbit(MotorRuedaDerecha)
+    setbit(MotorRuedaIzquierda)
+    Delay_us(520)
+    Delay_ms(0)
+    clearbit(MotorRuedaDerecha)
+    clearbit(MotorRuedaIzquierda)
+    Delay_ms(19)
+    Delay_us(480)
+end sub
+
+
+sub procedure RuedasEnEjeDerecha()
+    setbit(MotorRuedaDerecha)
+    setbit(MotorRuedaIzquierda)
+    Delay_us(600)
+    Delay_ms(2)
+    clearbit(MotorRuedaDerecha)
+    clearbit(MotorRuedaIzquierda)
+    Delay_ms(17)
+    Delay_us(400)
+end sub
+
+sub procedure RuedasAvanzar()
+    setbit(MotorRuedaIzquierda)
+    Delay_us(600)
+    Delay_ms(2)
+    clearbit(MotorRuedaIzquierda)
+    Delay_ms(17)
+    Delay_us(400)
+    
+    setbit(MotorRuedaDerecha)
+    Delay_us(520)
+    Delay_ms(0)
+    clearbit(MotorRuedaDerecha)
+    Delay_ms(19)
+    Delay_us(480)
+end sub
+
+sub procedure RuedasRetroceder()
+    setbit(MotorRuedaDerecha)
+    Delay_us(600)
+    Delay_ms(2)
+    clearbit(MotorRuedaDerecha)
+    Delay_ms(17)
+    Delay_us(400)
+    
+    setbit(MotorRuedaIzquierda)
+    Delay_us(520)
+    Delay_ms(0)
+    clearbit(MotorRuedaIzquierda)
+    Delay_ms(19)
+    Delay_us(480)
+end sub
+
+main:
+dim x as byte
+
+     Init_Port
+
+     Estoy_Vivo
+     RS232_Send_EstoyVivo
+
+
+     while true
+
+           Read_RX
+           Soft_Uart_write(10)
+           Soft_Uart_write(13)
+
+           select case RX_Dato
+           case "w"
+                for x=1 to 5
+                    RuedasAvanzar
+                next x
+           case "s"
+                for x=1 to 5
+                     RuedasRetroceder
+                next x
+           case "d"
+                for x=1 to 1
+                     RuedasEnEjeDerecha
+                next x
+           case "a"
+                for x=1 to 1
+                    RuedasEnEjeIzquierda
+                next x
+           case "q"
+                for x=1 to 1
+                    CamaraArriba
+                next x
+           case "e"
+                for x=1 to 1
+                    CamaraAbajo
+                next x
+           case else
+
+           end select
+           Soft_Uart_write("-")
+           Soft_Uart_write(RX_Dato)
+           Soft_Uart_write(10)
+           Soft_Uart_write(13)
+           Soft_Uart_write(">")
+
+     wend
+     A_Dormir
+end.
